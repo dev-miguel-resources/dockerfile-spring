@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: mysql_db
+    restart: unless-stopped
+    secrets:
+      - mysql_user
+      - mysql_pass
+      - mysql_root_pass
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER_FILE: /run/secrets/mysql_user
+      MYSQL_PASSWORD_FILE: /run/secrets/mysql_pass
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_pass
+    ports:
+      - 3307:3306
+    volumes:
+      - mysql_data_vol:/var/lib/mysql
+    networks:
+      - net_springia_app
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -p$(cat /run/secrets/mysql_root_pass) || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+networks:
+  net_springia_app:
+    name: net_springia_app
+
+volumes:
+  mysql_data_vol:
+    name: mysql_data_vol
+
+secrets:
+  mysql_user:
+    file: ./secrets/mysql_user.txt
+  mysql_pass:
+    file: ./secrets/mysql_pass.txt
+  mysql_root_pass:
+    file: ./secrets/mysql_root_pass.txt
+  
