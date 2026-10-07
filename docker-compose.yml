@@ -19,17 +19,45 @@ services:
     volumes:
       - mysql_data_vol:/var/lib/mysql
     networks:
-      - net_springia_app
+      - net_spring_app
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -p$(cat /run/secrets/mysql_root_pass) || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 10
       start_period: 15s
+  
+  app-spring:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: spring-app:1.0
+    #image: spring-app:1.0
+    container_name: spring_app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE} # dev, prod, qa
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    secrets:
+      - mysql_user
+      - mysql_pass
+    networks:
+      - net_spring_app
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
 networks:
-  net_springia_app:
-    name: net_springia_app
+  net_spring_app:
+    name: net_spring_app
 
 volumes:
   mysql_data_vol:
