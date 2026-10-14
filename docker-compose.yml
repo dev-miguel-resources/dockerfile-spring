@@ -17,7 +17,7 @@ services:
     ports:
       - 3307:3306
     volumes:
-      - mysql_data_vol:/var/lib/mysql
+      - mysql_data_vol_2:/var/lib/mysql
     networks:
       - net_spring_app
     healthcheck:
@@ -28,10 +28,10 @@ services:
       start_period: 15s
   
   app-spring:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: spring-app:1.0.1 
+    #build:
+    #  context: .
+    #  dockerfile: Dockerfile
+    image: xami10/docker-spring:1.0 
     #image: spring-app:1.0
     container_name: spring_app
     restart: unless-stopped
@@ -60,8 +60,8 @@ networks:
     name: net_spring_app
 
 volumes:
-  mysql_data_vol:
-    name: mysql_data_vol
+  mysql_data_vol_2:
+    name: mysql_data_vol_2
 
 secrets:
   mysql_user:
